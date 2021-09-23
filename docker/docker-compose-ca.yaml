@@ -1,0 +1,48 @@
+# docker config for 2 CA server
+# TLS CA server: use for issue TLS certificate for TLS connection
+# Organzation CA server: use for issue indentity for user
+
+version: "3.7" # use docker verion 3.7
+
+# config network
+networks:
+  nft-network: # name of the network container will run in
+    name: nft-network
+
+# config services
+services:
+  tls.ca.server: # config for TLS CA server
+    image: hyperledger/fabric-ca:latest # latest farbic ca
+    hostname: tlsca.nftnetowrk.com
+    labels:
+      service: hyperledger-fabric
+    environment: # dont need to set enviroment, will set in config file
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:17055
+    ports: # running port
+      - "7055:7055"
+      - "17055:17055"
+    command: sh -c 'fabric-ca-server start' # command to run when initial
+    volumes:
+      - ../organizations/fabric-ca-server/tls-ca:/etc/hyperledger/fabric-ca-server # path to store ca config
+    container_name: TLS-CA-Server
+    networks:
+      - nft-network # run in config network
+
+  org.ca.server: # config for Organization CA server
+    image: hyperledger/fabric-ca:latest # latest farbic ca
+    hostname: orgca.nftnetwork.com
+    labels:
+      service: hyperledger-fabric
+    environment: # dont need to set enviroment, will set in config file
+      - FABRIC_CA_HOME=/etc/hyperledger/fabric-ca-server
+      - FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:17054
+    ports:
+      - "7054:7054"
+      - "17054:17054"
+    command: sh -c 'fabric-ca-server start' # command to run when initial
+    volumes:
+      - ../organizations/fabric-ca-server/org-ca:/etc/hyperledger/fabric-ca-server # path to store ca config
+    container_name: ORG-CA-Server
+    networks:
+      - nft-network # run in config network
