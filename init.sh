@@ -4,12 +4,20 @@ tput setaf 1 # make all output red
 
 # Create directory
 echo "[+] Create folder"
-mkdir -p organizations/fabric-ca-client organizations/fabric-ca-server
+mkdir -p organizations/{fabric-ca-client,fabric-ca-server,ordererOrganizations,peerOrganizations} # folder of type of organizations
 
-mkdir -p organizations/fabric-ca-server/org-ca organizations/fabric-ca-server/tls-ca
+# CA organizations
+mkdir -p organizations/fabric-ca-server/{org-ca,tls-ca} 
 mkdir -p organizations/fabric-ca-server/org-ca/tls
 
-mkdir -p organizations/fabric-ca-client/tls-ca organizations/fabric-ca-client/tls-root-cert organizations/fabric-ca-client/org-ca
+mkdir -p organizations/fabric-ca-client/{tls-ca,tls-root-cert,org-ca}
+
+# Orderer Organzations
+mkdir -p organizations/ordererOrganizations
+
+# Peer Organzations
+mkdir -p organizations/peerOrganizations/{org1,org2}/{msp,peers}
+mkdir -p organizations/peerOrganizations/org1/peers/peer0/{msp,tls} # 1 peer for now
 
 # copy config
 cp server-config/ca-server/tls-ca/fabric-ca-server-config.yaml organizations/fabric-ca-server/tls-ca/
@@ -36,6 +44,7 @@ source scripts/enroll_TLSCA_user.sh
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 echo "[+] Start up Organization CA server"
 
+# copy pubic/private key of TLS Ceritificate generate by TlS CA for inital CA server with TLS
 cp organizations/fabric-ca-client/tls-ca/rcaadmin/msp/signcerts/cert.pem organizations/fabric-ca-server/org-ca/tls/
 cp organizations/fabric-ca-client/tls-ca/rcaadmin/msp/keystore/key.pem organizations/fabric-ca-server/org-ca/tls/
 
@@ -46,3 +55,9 @@ echo "[+] Wait 3s for key to generate"
 sleep 3
 
 source scripts/enroll_CA_user.sh
+
+tput setaf 1 # make all output red
+echo "[+] Creating Peer Organization1"
+cp -R organizations/fabric-ca-client/tls-root-cert organizations/peerOrganizations/
+
+source scripts/createOrg.sh

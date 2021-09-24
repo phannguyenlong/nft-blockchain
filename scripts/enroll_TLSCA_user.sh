@@ -15,5 +15,9 @@ fabric-ca-client enroll -d -u https://rcaadmin:rcaadminpw@localhost:7055 --tls.c
 mv tls-ca/rcaadmin/msp/keystore/* tls-ca/rcaadmin/msp/keystore/key.pem
 mv tls-ca/tlsadmin/msp/keystore/* tls-ca/tlsadmin/msp/keystore/key.pem
 
+
+echo "[+] Registering Org1 Peer0"
+fabric-ca-client register -d --id.name peer0 --id.secret peer0pw -u https://localhost:7055  --tls.certfiles tls-root-cert/tls-ca-cert.pem --mspdir tls-ca/tlsadmin/msp
+
 # cd back
 cd ../../
