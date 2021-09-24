@@ -64,3 +64,7 @@ cp -R organizations/fabric-ca-client/tls-root-cert organizations/peerOrganizatio
 createOrg1
 cp -R organizations/fabric-ca-client/tls-root-cert organizations/ordererOrganizations/
 createOrderer
+
+tput setaf 1 # make all output red
+echo "[+] Start up Peer0 Server"
+docker-compose -f docker/docker-compose.yaml up -d
