@@ -13,7 +13,8 @@ mkdir -p organizations/fabric-ca-server/org-ca/tls
 mkdir -p organizations/fabric-ca-client/{tls-ca,tls-root-cert,org-ca}
 
 # Orderer Organzations
-mkdir -p organizations/ordererOrganizations
+mkdir -p organizations/ordererOrganizations/org0/{msp,orderers}
+mkdir -p organizations/ordererOrganizations/org0/orderers/orderer0/{msp,tls} # 1 peer for now
 
 # Peer Organzations
 mkdir -p organizations/peerOrganizations/{org1,org2}/{msp,peers}
@@ -58,6 +59,8 @@ source scripts/enroll_CA_user.sh
 
 tput setaf 1 # make all output red
 echo "[+] Creating Peer Organization1"
+. scripts/createOrg.sh
 cp -R organizations/fabric-ca-client/tls-root-cert organizations/peerOrganizations/
-
-source scripts/createOrg.sh
+createOrg1
+cp -R organizations/fabric-ca-client/tls-root-cert organizations/ordererOrganizations/
+createOrderer
