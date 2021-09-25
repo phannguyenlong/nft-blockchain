@@ -59,6 +59,7 @@ source scripts/enroll_CA_user.sh
 
 tput setaf 1 # make all output red
 echo "[+] Creating Peer Organization1"
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
 . scripts/createOrg.sh
 cp -R organizations/fabric-ca-client/tls-root-cert organizations/peerOrganizations/
 createOrg1
@@ -66,5 +67,17 @@ cp -R organizations/fabric-ca-client/tls-root-cert organizations/ordererOrganiza
 createOrderer
 
 tput setaf 1 # make all output red
+# Creaet genesis block for channel 1
+mkdir channel-artifacts/
+echo "[+] Create Genesis block"
+configtxgen -profile genesis -outputBlock channel-artifacts/genesis_block.pb -channelID channel1
+
 echo "[+] Start up Peer0 Server"
 docker-compose -f docker/docker-compose.yaml up -d
+
+tput setaf 1 # make all output red
+printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -
+echo "[+] Creating channel"
+source scripts/createChannel.sh
+
+echo "[+] Done"
