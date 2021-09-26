@@ -1,3 +1,4 @@
 organizations/
 bin/
-config/
+config
+channel-artifacts

@@ -70,10 +70,11 @@ tput setaf 1 # make all output red
 # Creaet genesis block for channel 1
 mkdir channel-artifacts/
 echo "[+] Create Genesis block"
-configtxgen -profile genesis -outputBlock channel-artifacts/genesis_block.pb -channelID channel1
+cp server-config/configtx/configtx.yaml config/configtx.yaml
+configtxgen -profile genesis -outputBlock channel-artifacts/genesis_block.pb -channelID channel1 -configPath config
 
 echo "[+] Start up Peer0 Server"
-docker-compose -f docker/docker-compose.yaml up -d
+docker-compose -f docker/docker-compose.yaml up -d --force-recreate # force create new one
 
 tput setaf 1 # make all output red
 printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' -

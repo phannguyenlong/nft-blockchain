@@ -40,6 +40,7 @@ services:
       - CORE_PEER_GOSSIP_EXTERNALENDPOINT=localhost:7051
       - CORE_PEER_LOCALMSPID=org1
       - CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:17051
+      - CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp/user/admin/msp
     volumes:
         - /var/run/docker.sock:/host/var/run/docker.sock
         - ../organizations/peerOrganizations/org1/peers/peer0/msp:/etc/hyperledger/fabric/msp
@@ -87,7 +88,7 @@ services:
     working_dir: /opt/gopath/src/github.com/hyperledger/fabric
     command: orderer
     volumes:
-        - ../channel-artifacts/genesis_block.pb:/var/hyperledger/orderer/orderer.genesis.block
+        - ${PWD}/../channel-artifacts/genesis_block.pb:/var/hyperledger/orderer/orderer.genesis.block # user absolute path for prevent error from docker
         - ../organizations/ordererOrganizations/org0/orderers/orderer0/msp:/var/hyperledger/orderer/msp
         - ../organizations/ordererOrganizations/org0/orderers/orderer0/tls/:/var/hyperledger/orderer/tls
         - orderer0.org0.com:/var/hyperledger/production/orderer
