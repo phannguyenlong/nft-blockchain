@@ -7,8 +7,8 @@ Organizations:
         MSPDir: ../organizations/ordererOrganizations/org0/msp
         Policies:
             Readers:
-                Type: Signature
-                Rule: "OR('org0.member')"
+                Type: Signature # Mean which org has to sign to satisfield the policy
+                Rule: "OR('org0.member')" # This mens it is statis field if sign by member of org0
             Writers:
                 Type: Signature
                 Rule: "OR('org0.member')"
