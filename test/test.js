@@ -1,9 +1,11 @@
 const yaml = require("js-yaml")
 const fs = require("fs")
-const shell = require('shelljs')
+const shell = require('shelljs');
+const path = require("path");
 
-async function creatPeerAndCA(organization, port, username, password) {
+async function creatPeerAndCA(organization, port, username, password, channel) {
     organization = organization.replace(" ", ".").toLowerCase(); // normalize data
+    channel = channel.replace(" ", ".").toLowerCase(); // normalize data
 
     let file = fs.readFileSync(__dirname + "/../docker/test-docker-compose-ca.yaml")
     let yamlFile = yaml.load(file.toString());
@@ -16,7 +18,7 @@ async function creatPeerAndCA(organization, port, username, password) {
 
     // general config
     caDockerConfig.container_name = `ca.${organization}` // set container name
-    caDockerConfig.volumes = [`../organizations/fabric-ca-server/ca-${organization}:/etc/hyperledger/fabric-ca-server`] // mount points arrays
+    caDockerConfig.volumes = [`../../organizations/${channel}/fabric-ca-server/ca-${organization}:/etc/hyperledger/fabric-ca-server`] // mount points arrays
     caDockerConfig.command = `sh -c 'fabric-ca-server start -b ${username}:${password} -d'` // lauch with username and password
     caDockerConfig.ports = [`${port}:${port}`, `1${port}:1${port}`]
 
@@ -54,8 +56,8 @@ async function creatPeerAndCA(organization, port, username, password) {
     peerDockerConfig.environment = peerDockerConfig.environment.concat(peerEnvConfig)
 
     let peerVolumn = [
-        `../organizations/peerOrganizations/${organization}/peers/peer-${organization}/msp:/etc/hyperledger/fabric/msp`,
-        `../organizations/peerOrganizations/${organization}/peers/peer-${organization}/tls:/etc/hyperledger/fabric/tls`,
+        `../../organizations/${channel}/peerOrganizations/${organization}/peers/peer-${organization}/msp:/etc/hyperledger/fabric/msp`,
+        `../../organizations/${channel}/peerOrganizations/${organization}/peers/peer-${organization}/tls:/etc/hyperledger/fabric/tls`,
         `peer.${organization}:/var/hyperledger/production`
     ]
     peerDockerConfig.volumes = peerDockerConfig.volumes.concat(peerVolumn)
@@ -65,12 +67,20 @@ async function creatPeerAndCA(organization, port, username, password) {
     delete yamlFile.services["peer.server"]
 
     // save to file
-    fs.writeFileSync(__dirname + `/docker/ca-compose-${organization}.yaml`, yaml.dump(yamlFile, { lineWidth: -1 }))
+    let filePath = __dirname + `/docker/${channel}`
+    if (!fs.existsSync(path)) { // if note create new
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.writeFileSync(filePath + `/ca_peer-compose-${organization}.yaml`, yaml.dump(yamlFile, { lineWidth: -1 }))
 
 
     // run shell
     shell.env["PATH"] =  __dirname + "/../bin/:" + shell.env["PATH"] // commennt this if alread set env
-    shell.exec(`cd ../; ./upPeerAndCA.sh ${organization} ${username} ${password} ${port} peer${username} peer${password}; cd test/`)
+    shell.exec(`bash -c 'cd ../; ./upPeerAndCA.sh ${organization} ${username} ${password} ${port} peer${username} peer${password} ${channel}; cd test/; pwd'`)
 }
 
-creatPeerAndCA("Comnpany A", 7054, 'admin', 'password')
+async function main() {
+    await creatPeerAndCA("Comnpany A", 7054, 'admin', 'password', 'channel1')
+}
+
+main()
