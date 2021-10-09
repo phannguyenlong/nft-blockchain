@@ -2,6 +2,7 @@ const yaml = require("js-yaml")
 const fs = require("fs")
 const shell = require('shelljs');
 const path = require("path");
+const { chdir, cwd } = require('process');
 
 // use for 1 peer and 1 CA of that peer
 /**
@@ -82,8 +83,10 @@ async function creatPeerAndCA(organization, port, username, password, channel) {
 
 
     // run shell
-    shell.env["PATH"] =  __dirname + "/../bin/:" + shell.env["PATH"] // commennt this if alread set env
+    let oldPwd = __dirname // save old location
+    shell.env["PATH"] = __dirname + "/../bin/:" + shell.env["PATH"] // commennt this if alread set env
     shell.exec(`bash -c 'cd ../; ./upPeerAndCA.sh ${organization} ${username} ${password} ${port} peer${username} peer${password} ${channel}; cd test/; pwd'`)
+    chdir(oldPwd) // then set it again to prevent error
 }
 
 /**
@@ -163,15 +166,17 @@ async function createOrdererAndCA(organization, port, channelAdminUsername, chan
     }
     fs.writeFileSync(filePath + `/orderer-compose-${organization}.yaml`, yaml.dump(yamlFile, { lineWidth: -1 }))
 
-        // run shell
+    // run shell
+    let oldPwd = __dirname // old location
     shell.env["PATH"] =  __dirname + "/../bin/:" + shell.env["PATH"] // commennt this if alread set env
     shell.exec(`bash -c 'cd ../; ./upOrdererAndCA.sh ${organization} ${channelAdminUsername} ${channelAdminPassword} ${port} orderer${channelAdminUsername} peer${channelAdminPassword} ${channel}; cd test/; pwd'`)
+    chdir(oldPwd) // then set it again to prevent error
 }
 
 // note: 1 organizationw will host orderer and 1 peer. Other org can host 1 peer only
 async function main() {
-    // await creatPeerAndCA("Comnpany B", 9054, 'admin', 'password', 'channel1')
-    // await createOrdererAndCA("Company B", 5054, 'ordererAdmin', 'ordererPassword', 'channel1')
+    await creatPeerAndCA("Comnpany A", 7054, 'admin', 'password', 'channel1')
+    await createOrdererAndCA("Company A", 8054, 'ordererAdmin', 'ordererPassword', 'channel1')
 }
 
 main()
