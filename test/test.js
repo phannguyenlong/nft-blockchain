@@ -70,7 +70,7 @@ async function creatPeerAndCA(organization, port, username, password) {
 
     // run shell
     shell.env["PATH"] =  __dirname + "/../bin/:" + shell.env["PATH"] // commennt this if alread set env
-    shell.exec(`cd ../; ./upPeerAndCA.sh ${organization} ${username} ${password} ${port} peer pass; cd test/`)
+    shell.exec(`cd ../; ./upPeerAndCA.sh ${organization} ${username} ${password} ${port} peer${username} peer${password}; cd test/`)
 }
 
 creatPeerAndCA("Comnpany A", 7054, 'admin', 'password')
