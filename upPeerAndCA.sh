@@ -55,7 +55,7 @@ function generatePeerMSP() {
 }
 
 # lauch docker CA container
-docker-compose -f test/docker/ca-compose-$1.yaml up -d ca.server
+docker-compose -f test/docker/ca-compose-$1.yaml up -d ca.$1
 
 cd test/organizations
 mkdir fabric-ca-client
@@ -65,4 +65,4 @@ generatePeerMSP $1 $2 $3 $4 $5 $6
 cd ../../../
 
 # Launch peer container
-docker-compose -f test/docker/ca-compose-$1.yaml up -d peer.server
+docker-compose -f test/docker/ca-compose-$1.yaml up -d peer.$1

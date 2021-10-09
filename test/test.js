@@ -29,7 +29,8 @@ async function creatPeerAndCA(organization, port, username, password) {
     caDockerConfig.environment = caDockerConfig.environment.concat(caEnvConfig)
 
     // save file
-    yamlFile.services["ca.server"] = caDockerConfig
+    yamlFile.services[`ca.${organization}`] = caDockerConfig
+    delete yamlFile.services["ca.server"]
 
     //=================For Peer====================
     let peerDockerConfig = yamlFile.services["peer.server"]
@@ -60,7 +61,8 @@ async function creatPeerAndCA(organization, port, username, password) {
     peerDockerConfig.volumes = peerDockerConfig.volumes.concat(peerVolumn)
     
     // save file
-    yamlFile.services["peer.server"] = peerDockerConfig
+    yamlFile.services[`peer.${organization}`] = peerDockerConfig
+    delete yamlFile.services["peer.server"]
 
     // save to file
     fs.writeFileSync(__dirname + `/docker/ca-compose-${organization}.yaml`, yaml.dump(yamlFile, { lineWidth: -1 }))

@@ -5,7 +5,7 @@ networks:
   nft-network:
     name: nft-network
 services:
-  ca.server:
+  ca.comnpany.a:
     image: hyperledger/fabric-ca:latest
     labels:
       service: hyperledger-fabric
@@ -24,7 +24,7 @@ services:
     networks:
       - nft-network
     container_name: ca.comnpany.a
-  peer.server:
+  peer.comnpany.a:
     container_name: peer.comnpany.a
     image: hyperledger/fabric-peer:latest
     labels:
