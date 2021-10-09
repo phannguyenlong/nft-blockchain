@@ -61,7 +61,8 @@ async function creatPeerAndCA(organization, port, username, password, channel) {
         `CORE_PEER_GOSSIP_EXTERNALENDPOINT=peer.${organization}:${peerPort}`,
         `CORE_PEER_GOSSIP_BOOTSTRAP=peer.${organization}:${peerPort}`,
         `CORE_PEER_LOCALMSPID=${organization}.msp`,
-        `CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:1${peerPort}`
+        `CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:1${peerPort}`,
+        `CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp/user/admin/msp`
     ]
     peerDockerConfig.environment = peerDockerConfig.environment.concat(peerEnvConfig)
 
