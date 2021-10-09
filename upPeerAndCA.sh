@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Start up CA server
-# upPeerAndCA.sh company_name ca_username ca_password ca_port peer_username peer_password
-# test: ./upPeerAndCA.sh comnpany.a admin password 7054 peer pass
+# upPeerAndCA.sh company_name ca_username ca_password ca_port peer_username peer_password channel_name
+# test: ./upPeerAndCA.sh company.a admin password 7054 peer pass channel1
 
 
 function generatePeerMSP() {
@@ -52,17 +52,26 @@ function generatePeerMSP() {
     mkdir ../peerOrganizations/$1/msp/{cacerts,tlscacerts}
     cp ../peerOrganizations/$1/peers/peer-$1/msp/cacerts/* ../peerOrganizations/$1/msp/cacerts
     cp ../peerOrganizations/$1/peers/peer-$1/tls/tlscacerts/* ../peerOrganizations/$1/msp/tlscacerts
+
+    # cd back
+    cd ../../../../
 }
 
 # lauch docker CA container
-docker-compose -f test/docker/ca-compose-$1.yaml up -d ca.$1
+docker-compose -f test/docker/$7/ca_peer-compose-$1.yaml up -d ca.$1
 
-cd test/organizations
+# check dir exsist or not
+if [ ! -d "test/organizations/$7" ] 
+then 
+    mkdir "test/organizations/$7" 
+fi
+
+# go to channel organizations
+cd "test/organizations/$7" 
 mkdir fabric-ca-client
 cd fabric-ca-client
-generatePeerMSP $1 $2 $3 $4 $5 $6
 
-cd ../../../
+generatePeerMSP $1 $2 $3 $4 $5 $6 
 
 # Launch peer container
-docker-compose -f test/docker/ca-compose-$1.yaml up -d peer.$1
+docker-compose -f test/docker/$7/ca_peer-compose-$1.yaml up -d peer.$1

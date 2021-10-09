@@ -3,6 +3,13 @@ const fs = require("fs")
 const shell = require('shelljs');
 const path = require("path");
 
+// use for 1 peer and 1 CA of that peer
+/**
+ * Using 3 port
+ * peerPort: listen port for peer
+ * peerPort + 1: port for chaincode
+ * 1`peerPort`:  orderer operation listenaddress
+ */
 async function creatPeerAndCA(organization, port, username, password, channel) {
     organization = organization.replace(" ", ".").toLowerCase(); // normalize data
     channel = channel.replace(" ", ".").toLowerCase(); // normalize data
@@ -79,8 +86,92 @@ async function creatPeerAndCA(organization, port, username, password, channel) {
     shell.exec(`bash -c 'cd ../; ./upPeerAndCA.sh ${organization} ${username} ${password} ${port} peer${username} peer${password} ${channel}; cd test/; pwd'`)
 }
 
+/**
+ * Using 3 port
+ * ordererPort: listen port for orderer
+ * orderPort + 1: Ordere_admin port use for tool osnadmin
+ * 1`ordererPort`:  orderer operation listenaddress
+ */
+async function createOrdererAndCA(organization, port, channelAdminUsername, channelAdminPassword, channel) {
+    organization = organization.replace(" ", ".").toLowerCase(); // normalize data
+    channel = channel.replace(" ", ".").toLowerCase(); // normalize data
+
+    let file = fs.readFileSync(__dirname + "/../docker/orderer-docker-compose.yaml")
+    let yamlFile = yaml.load(file.toString());
+
+    // add volumn for peer
+    yamlFile.volumes[`orderer.${organization}`] = null
+
+    //=================For CA====================
+    let caDockerConfig = yamlFile.services["ca.orderer"]
+
+    // general config
+    caDockerConfig.container_name = `ca.orderer.${organization}` // set container name
+    caDockerConfig.volumes = [`../../organizations/${channel}/fabric-ca-server/ca.orderer-${organization}:/etc/hyperledger/fabric-ca-server`] // mount points arrays
+    caDockerConfig.command = `sh -c 'fabric-ca-server start -b ${channelAdminUsername}:${channelAdminPassword} -d'` // lauch with username and password
+    caDockerConfig.ports = [`${port}:${port}`, `1${port}:1${port}`] // set port
+
+    // add enviroment variable to caConfig
+    let caEnvConfig = [
+      `FABRIC_CA_SERVER_CA_NAME=ca.orderer-${organization}`,
+      `FABRIC_CA_SERVER_PORT=${port}`,
+      `FABRIC_CA_SERVER_OPERATIONS_LISTENADDRESS=0.0.0.0:1${port}`,
+    ];
+    caDockerConfig.environment = caDockerConfig.environment.concat(caEnvConfig)
+
+    // save file
+    yamlFile.services[`ca.orderer.${organization}`] = caDockerConfig
+    delete yamlFile.services["ca.orderer"]
+
+    //=================For Orderer====================
+    let ordererDockerConfig = yamlFile.services["orderer.server"]
+    let ordererPort = port + 1
+
+    // general config
+    ordererDockerConfig.container_name = `orderer.${organization}` // set container name
+    ordererDockerConfig.ports = [
+      `${ordererPort}:${ordererPort}`,
+      `1${ordererPort}:1${ordererPort}`,
+      `${ordererPort + 1}:${ordererPort + 1}`, //  port for ORDERER admin listnet addres
+    ];
+
+    let ordererEnv = [
+        `ORDERER_GENERAL_LISTENADDRESS=0.0.0.0`,
+        `ORDERER_GENERAL_LISTENPORT=${ordererPort}`,
+        `ORDERER_GENERAL_LOCALMSPID=$orderer.${organization}.msp`,
+        `ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:${ordererPort + 1}`, // rememeber to connect this port when use osnadmin tool
+        `ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:1${ordererPort}`
+    ]
+    ordererDockerConfig.environment = ordererDockerConfig.environment.concat(ordererEnv)
+
+    let ordererVolumn = [
+        `\${PWD}/../../channel-artifacts/${channel}/genesis_block.pb:/var/hyperledger/orderer/orderer.genesis.block`,  // use absolute path for prevent error from docker
+        `../../organizations/${channel}/ordererOrganizations/${organization}/orderers/orderer-${organization}/msp:/var/hyperledger/orderer/msp`,
+        `../../organizations/${channel}/ordererOrganizations/${organization}/orderers/orderer-${organization}/tls/:/var/hyperledger/orderer/tls`,
+        `orderer.${organization}:/var/hyperledger/production/orderer`
+    ]
+
+    ordererDockerConfig.volumes = ordererVolumn
+
+    yamlFile.services[`orderer.${organization}`] = ordererDockerConfig
+    delete yamlFile.services["orderer.server"]
+
+    // save to file
+    let filePath = __dirname + `/docker/${channel}`
+    if (!fs.existsSync(path)) { // if note create new
+        fs.mkdirSync(filePath, { recursive: true });
+    }
+    fs.writeFileSync(filePath + `/orderer-compose-${organization}.yaml`, yaml.dump(yamlFile, { lineWidth: -1 }))
+
+        // run shell
+    shell.env["PATH"] =  __dirname + "/../bin/:" + shell.env["PATH"] // commennt this if alread set env
+    shell.exec(`bash -c 'cd ../; ./upOrdererAndCA.sh ${organization} ${channelAdminUsername} ${channelAdminPassword} ${port} orderer${channelAdminUsername} peer${channelAdminPassword} ${channel}; cd test/; pwd'`)
+}
+
+// note: 1 organizationw will host orderer and 1 peer. Other org can host 1 peer only
 async function main() {
-    await creatPeerAndCA("Comnpany A", 7054, 'admin', 'password', 'channel1')
+    // await creatPeerAndCA("Comnpany B", 9054, 'admin', 'password', 'channel1')
+    // await createOrdererAndCA("Company B", 5054, 'ordererAdmin', 'ordererPassword', 'channel1')
 }
 
 main()

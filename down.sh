@@ -1,5 +1,6 @@
-for entry in `ls test/docker`; do
-    docker-compose -f test/docker/$entry down
+for entry in `find test/docker -type f`; do
+    echo $entry
+    docker-compose -f $entry down
 done
 
 
