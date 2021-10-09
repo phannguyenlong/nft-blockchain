@@ -35,16 +35,16 @@ function generateOrdererMSP() {
     echo "NodeOUs:
     Enable: true
     ClientOUIdentifier:
-        Certificate: cacerts/localhost-$4-ca-$ORGNAME.pem
+        Certificate: cacerts/localhost-$4-ca-orderer-$ORGNAME.pem
         OrganizationalUnitIdentifier: client
     PeerOUIdentifier:
-        Certificate: cacerts/localhost-$4-ca-$ORGNAME.pem
+        Certificate: cacerts/localhost-$4-ca-orderer-$ORGNAME.pem
         OrganizationalUnitIdentifier: peer
     AdminOUIdentifier:
-        Certificate: cacerts/localhost-$4-ca-$ORGNAME.pem
+        Certificate: cacerts/localhost-$4-ca-orderer-$ORGNAME.pem
         OrganizationalUnitIdentifier: admin
     OrdererOUIdentifier:
-        Certificate: cacerts/localhost-$4-ca-$ORGNAME.pem
+        Certificate: cacerts/localhost-$4-ca-orderer-$ORGNAME.pem
         OrganizationalUnitIdentifier: orderer" > "../ordererOrganizations/$1/msp/config.yaml"
     
     cp ../ordererOrganizations/$1/msp/config.yaml ../ordererOrganizations/$1/orderers/orderer-$1/msp/config.yaml

@@ -11,17 +11,17 @@ function generatePeerMSP() {
 
     # enroll CA admin
     echo "[+] Enroll CA admin"
-    fabric-ca-client enroll -d -u https://$2:$3@localhost:$4 --caname ca-$1 --tls.certfiles $CAPATH/ca-cert.pem --csr.hosts 'localhost' --mspdir ca-$1/admin/msp
+    fabric-ca-client enroll -d -u https://$2:$3@localhost:$4 --caname ca-$1 --tls.certfiles $CAPATH/ca-cert.pem --csr.hosts peer.$1 --csr.hosts 'localhost' --mspdir ca-$1/admin/msp
     
     # Use CA admin for regsier peer
     echo "[+] Register Peer identity"
-    fabric-ca-client register -d --id.name $5 --id.secret $6 --id.type peer -u https://localhost:$4 --tls.certfiles $CAPATH/ca-cert.pem --csr.hosts 'localhost' --mspdir ca-$1/admin/msp
+    fabric-ca-client register -d --id.name $5 --id.secret $6 --id.type peer -u https://localhost:$4 --tls.certfiles $CAPATH/ca-cert.pem --csr.hosts peer.$1 --csr.hosts 'localhost' --mspdir ca-$1/admin/msp
 
     # Enroll peer indentity
     echo "[+] Enroll peer identity"
-    fabric-ca-client enroll -u https://$5:$6@localhost:$4 --caname ca-$1 --csr.hosts 'localhost' --tls.certfiles $CAPATH/ca-cert.pem --mspdir ../peerOrganizations/$1/peers/peer-$1/msp
+    fabric-ca-client enroll -u https://$5:$6@localhost:$4 --caname ca-$1 --csr.hosts peer.$1 --csr.hosts 'localhost' --tls.certfiles $CAPATH/ca-cert.pem --mspdir ../peerOrganizations/$1/peers/peer-$1/msp
     echo "[+] Generate peer tls certificate"
-    fabric-ca-client enroll -d -u https://$5:$6@localhost:$4 --caname ca-$1 --tls.certfiles $CAPATH/ca-cert.pem --enrollment.profile tls --csr.hosts 'localhost' --mspdir ../peerOrganizations/$1/peers/peer-$1/tls
+    fabric-ca-client enroll -d -u https://$5:$6@localhost:$4 --caname ca-$1 --csr.hosts peer.$1 --tls.certfiles $CAPATH/ca-cert.pem --enrollment.profile tls --csr.hosts 'localhost' --mspdir ../peerOrganizations/$1/peers/peer-$1/tls
 
     # use for create peer
     cp ../peerOrganizations/$1/peers/peer-$1/tls/tlscacerts/* ../peerOrganizations/$1/peers/peer-$1/tls/ca.crt

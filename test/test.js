@@ -4,12 +4,14 @@ const shell = require('shelljs');
 const path = require("path");
 const { chdir, cwd } = require('process');
 
-// use for 1 peer and 1 CA of that peer
 /**
- * Using 3 port
- * peerPort: listen port for peer
- * peerPort + 1: port for chaincode
- * 1`peerPort`:  orderer operation listenaddress
+ * Peer CA using 2 port:
+ *  - port: ca orderer listen address
+ *  - 1`port`: ca oredere operation address
+ * Peer Using 3 port:
+ *  - peerPort = port + 1: listen port for peer
+ *  - peerPort + 1: peer chaincode address
+ *  - 1`peerPort`:  Peer operation listenaddress
  */
 async function creatPeerAndCA(organization, port, username, password, channel) {
     organization = organization.replace(" ", ".").toLowerCase(); // normalize data
@@ -90,10 +92,13 @@ async function creatPeerAndCA(organization, port, username, password, channel) {
 }
 
 /**
- * Using 3 port
- * ordererPort: listen port for orderer
- * orderPort + 1: Ordere_admin port use for tool osnadmin
- * 1`ordererPort`:  orderer operation listenaddress
+ * Ordere CA using 2 port:
+ *  - port: ca orderer listen address
+ *  - 1`port`: ca oredere operation address
+ * Orderer Using 3 port:
+ *  - ordererPort = port + 1: listen port for orderer
+ *  - ordererPort + 1: Ordere_admin port use for tool osnadmin
+ *  - 1`ordererPort`:  Orderer operation listenaddress
  */
 async function createOrdererAndCA(organization, port, channelAdminUsername, channelAdminPassword, channel) {
     organization = organization.replace(" ", ".").toLowerCase(); // normalize data
@@ -141,7 +146,7 @@ async function createOrdererAndCA(organization, port, channelAdminUsername, chan
     let ordererEnv = [
         `ORDERER_GENERAL_LISTENADDRESS=0.0.0.0`,
         `ORDERER_GENERAL_LISTENPORT=${ordererPort}`,
-        `ORDERER_GENERAL_LOCALMSPID=$orderer.${organization}.msp`,
+        `ORDERER_GENERAL_LOCALMSPID=orderer.${organization}.msp`,
         `ORDERER_ADMIN_LISTENADDRESS=0.0.0.0:${ordererPort + 1}`, // rememeber to connect this port when use osnadmin tool
         `ORDERER_OPERATIONS_LISTENADDRESS=0.0.0.0:1${ordererPort}`
     ]
@@ -175,8 +180,9 @@ async function createOrdererAndCA(organization, port, channelAdminUsername, chan
 
 // note: 1 organizationw will host orderer and 1 peer. Other org can host 1 peer only
 async function main() {
-    await creatPeerAndCA("Comnpany A", 7054, 'admin', 'password', 'channel1')
-    await createOrdererAndCA("Company A", 8054, 'ordererAdmin', 'ordererPassword', 'channel1')
+    await creatPeerAndCA("Company A", 6054, 'admin', 'password', 'channel1')
+    await creatPeerAndCA("Company B", 7054, 'admin', 'password', 'channel1')
+    await createOrdererAndCA("Company C", 8054, 'ordererAdmin', 'ordererPassword', 'channel1')
 }
 
 main()
