@@ -12,6 +12,7 @@ There will 2 main folder:
 
 ## Folder structure of `leopard-network`
 
+```
 ├───channel-artifacts  
 |   ├───channel1  
 |   |   ├───genesis_block.pb  
@@ -53,6 +54,7 @@ There will 2 main folder:
 |   |   ├───...  
 ├───sample  
 └───scripts  
+```
 
 - **/channel-artifacts:** Store the genesis block to join channel
 - **/channel-config:** Store the `configtx.yaml` use to create genesis block
