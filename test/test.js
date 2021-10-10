@@ -79,7 +79,7 @@ async function creatPeerAndCA(organization, port, username, password, channel) {
 
     // save to file
     let filePath = __dirname + `/docker/${channel}`
-    if (!fs.existsSync(path)) { // if note create new
+    if (!fs.existsSync(filePath)) { // if note create new
         fs.mkdirSync(filePath, { recursive: true });
     }
     fs.writeFileSync(filePath + `/ca_peer-compose-${organization}.yaml`, yaml.dump(yamlFile, { lineWidth: -1 }))
@@ -167,7 +167,7 @@ async function createOrdererAndCA(organization, port, channelAdminUsername, chan
 
     // save to file
     let filePath = __dirname + `/docker/${channel}`
-    if (!fs.existsSync(path)) { // if note create new
+    if (!fs.existsSync(filePath)) { // if note create new
         fs.mkdirSync(filePath, { recursive: true });
     }
     fs.writeFileSync(filePath + `/orderer-compose-${organization}.yaml`, yaml.dump(yamlFile, { lineWidth: -1 }))

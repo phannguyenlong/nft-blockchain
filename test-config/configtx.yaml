@@ -39,7 +39,7 @@ Organizations:
                 Rule: "OR('orderer.company.c.msp.member')"
             Admins: # ability to do admin function
                 Type: Signature
-                Rule: "OR('orderer.company.a.msp.admin')" # means only org admin can do this action
+                Rule: "OR('orderer.company.c.msp.admin')" # means only org admin can do this action
 
         OrdererEndpoints:
             - localhost:8055
