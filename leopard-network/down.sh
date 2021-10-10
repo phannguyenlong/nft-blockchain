@@ -1,6 +1,6 @@
 for entry in `find docker -type f`; do
     echo $entry
-    docker-compose -f $entry down --volumes
+    docker-compose -f $entry down --volumes --remove-orphans
 done
 
 docker volume prune -f # remove all volumes

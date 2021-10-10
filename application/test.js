@@ -12,6 +12,8 @@ const { chdir, cwd } = require('process');
  *  - peerPort = port + 1: listen port for peer
  *  - peerPort + 1: peer chaincode address
  *  - 1`peerPort`:  Peer operation listenaddress
+ * CouchDB use 1 port
+ *  - couchDBport = port + 3
  */
 async function creatPeerAndCA(organization, port, username, password, channel) {
     organization = organization.replace(" ", ".").toLowerCase(); // normalize data
@@ -62,7 +64,11 @@ async function creatPeerAndCA(organization, port, username, password, channel) {
         `CORE_PEER_GOSSIP_BOOTSTRAP=peer.${organization}:${peerPort}`,
         `CORE_PEER_LOCALMSPID=${organization}.msp`,
         `CORE_OPERATIONS_LISTENADDRESS=0.0.0.0:1${peerPort}`,
-        `CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp/user/admin/msp`
+        `CORE_PEER_MSPCONFIGPATH=/etc/hyperledger/fabric/msp/user/admin/msp`,
+        `CORE_LEDGER_STATE_STATEDATABASE=CouchDB`,
+        `CORE_LEDGER_STATE_COUCHDBCONFIG_COUCHDBADDRESS=couchdb.${organization}:5984`, // mapp with internal couchDB address (not localhost)
+        `CORE_LEDGER_STATE_COUCHDBCONFIG_USERNAME=${username}`,
+        `CORE_LEDGER_STATE_COUCHDBCONFIG_PASSWORD=${password}`
     ]
     peerDockerConfig.environment = peerDockerConfig.environment.concat(peerEnvConfig)
 
@@ -72,10 +78,24 @@ async function creatPeerAndCA(organization, port, username, password, channel) {
         `peer.${organization}:/var/hyperledger/production`
     ]
     peerDockerConfig.volumes = peerDockerConfig.volumes.concat(peerVolumn)
-    
+    // peerDockerConfig.depends_on = `couchdb.${organization}`
     // save file
     yamlFile.services[`peer.${organization}`] = peerDockerConfig
     delete yamlFile.services["peer.server"]
+
+    //===========================For CouchDB============================
+    let couchDBConfig = yamlFile.services["couchdb"]
+    let couchdbPort = port + 3
+    couchDBConfig.container_name = `couchdb.${organization}`
+    couchDBConfig.environment = [
+        `COUCHDB_USER=${username}`,
+        `COUCHDB_PASSWORD=${password}`
+    ]
+    couchDBConfig.ports = [`${couchdbPort}:5984`] // use to expose couchDB port to outside (5984 is operation port of couchDB)
+
+    // save file
+    yamlFile.services[`couchdb.${organization}`] = couchDBConfig
+    delete yamlFile.services["couchdb"]
 
     // save to file
     let filePath = __dirname + `/../leopard-network/docker/${channel}`
