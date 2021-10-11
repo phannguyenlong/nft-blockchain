@@ -28,7 +28,7 @@ async function createChannel(orderer, peers) {
             Writers: { Type: "Signature", Rule: `OR('orderer.${orderer.getNormalizeOrg}.msp.member')` },
             Admins: { Type: "Signature", Rule: `OR('orderer.${orderer.getNormalizeOrg}.msp.admin')` }
         },
-        OrdererEndpoints: [ `localhost:${orderer.ordererPort}` ]
+        OrdererEndpoints: [ `orderer.${orderer.getNormalizeOrg}:${orderer.ordererPort}` ]
     }
 
     // set up Orderer part
@@ -63,8 +63,9 @@ async function createChannel(orderer, peers) {
                 Readers: { Type: 'Signature', Rule: `OR('${peer.getNormalizeOrg}.msp.admin', '${peer.getNormalizeOrg}.msp.peer', '${peer.getNormalizeOrg}.msp.client')` },
                 Writers: { Type: 'Signature', Rule: `OR('${peer.getNormalizeOrg}.msp.admin', '${peer.getNormalizeOrg}.msp.client')` },
                 Admins: { Type: 'Signature', Rule: `OR('${peer.getNormalizeOrg}.msp.admin', '${peer.getNormalizeOrg}.msp.peer')` },
-                Endorsement: { Type: 'Signature', Rule: `OR('${peer.getNormalizeOrg}.msp.peer')` }
-            }
+                Endorsement: { Type: 'Signature', Rule: `OR('${peer.getNormalizeOrg}.msp.peer', '${peer.getNormalizeOrg}.msp.admin')` }
+            },
+            AnchorPeers: [{Host: `peer.${peer.getNormalizeOrg}`, Port: peer.peerPort}]
         }
         peerOrgName = peerOrgName.concat(`${peer.getNormalizeOrg},`) // get name for sh script
         LeopardGenesis.Application.Organizations.push(peerOrg)

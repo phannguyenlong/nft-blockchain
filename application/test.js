@@ -55,6 +55,7 @@ async function creatPeerAndCA(organization, port, username, password, channel) {
     peerDockerConfig.ports = [`${peerPort}:${peerPort}`, `1${peerPort}:1${peerPort}`] 
 
     let peerEnvConfig = [
+        `CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=nft-network`,
         `CORE_PEER_ID=peer.${organization}`,
         `CORE_PEER_ADDRESS=peer.${organization}:${peerPort}`,
         `CORE_PEER_LISTENADDRESS=0.0.0.0:${peerPort}`,

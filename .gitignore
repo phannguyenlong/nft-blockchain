@@ -1,7 +1,7 @@
 organizations/
 bin/
-config
 channel-artifacts
 package-lock.json
 node_modules/
 docker/docker-*
+*.tar.gz

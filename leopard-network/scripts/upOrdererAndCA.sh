@@ -11,17 +11,17 @@ function generateOrdererMSP() {
 
     # enroll CA admin
     echo "[+] Enroll CA admin"
-    fabric-ca-client enroll -d -u https://$2:$3@localhost:$4 --caname ca.orderer-$1 --tls.certfiles $CAPATH/ca-cert.pem --csr.hosts 'localhost' --mspdir ca.orderer-$1/admin/msp
+    fabric-ca-client enroll -d -u https://$2:$3@localhost:$4 --caname ca.orderer-$1 --tls.certfiles $CAPATH/ca-cert.pem --csr.hosts 'localhost' --csr.hosts "orderer.$1" --mspdir ca.orderer-$1/admin/msp
 
     # Use CA admin for regsier orderer
     echo "[+] Register Orderer identity"
-    fabric-ca-client register -d --id.name $5 --id.secret $6 --id.type orderer -u https://localhost:$4 --tls.certfiles $CAPATH/ca-cert.pem --csr.hosts 'localhost' --mspdir ca.orderer-$1/admin/msp
+    fabric-ca-client register -d --id.name $5 --id.secret $6 --id.type orderer -u https://localhost:$4 --tls.certfiles $CAPATH/ca-cert.pem --csr.hosts 'localhost' --csr.hosts "orderer.$1" --mspdir ca.orderer-$1/admin/msp
 
     # Enroll Orderer indentity
     echo "[+] Enroll Orderer identity"
-    fabric-ca-client enroll -u https://$5:$6@localhost:$4 --caname ca.orderer-$1 --csr.hosts 'localhost' --tls.certfiles $CAPATH/ca-cert.pem --mspdir ../ordererOrganizations/$1/orderers/orderer-$1/msp
+    fabric-ca-client enroll -u https://$5:$6@localhost:$4 --caname ca.orderer-$1 --csr.hosts 'localhost' --csr.hosts "orderer.$1" --tls.certfiles $CAPATH/ca-cert.pem --mspdir ../ordererOrganizations/$1/orderers/orderer-$1/msp
     echo "[+] Generate Orderer tls certificate"
-    fabric-ca-client enroll -d -u https://$5:$6@localhost:$4 --caname ca.orderer-$1 --tls.certfiles $CAPATH/ca-cert.pem --enrollment.profile tls --csr.hosts 'localhost' --mspdir ../ordererOrganizations/$1/orderers/orderer-$1/tls
+    fabric-ca-client enroll -d -u https://$5:$6@localhost:$4 --caname ca.orderer-$1 --tls.certfiles $CAPATH/ca-cert.pem --enrollment.profile tls --csr.hosts 'localhost' --csr.hosts "orderer.$1" --mspdir ../ordererOrganizations/$1/orderers/orderer-$1/tls
 
     # use for create orderer
     cp ../ordererOrganizations/$1/orderers/orderer-$1/tls/tlscacerts/* ../ordererOrganizations/$1/orderers/orderer-$1/tls/ca.crt
