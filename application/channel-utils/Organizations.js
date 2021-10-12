@@ -18,7 +18,7 @@ class Organization {
     }
 }
 
-class PeerOrganizations extends Organization {
+class PeerOrganization extends Organization {
     constructor(orgName, caAdmin, caPassword, peerAdmin, peerPassword, channelName, portNumber) {
         super(orgName, caAdmin, caPassword, channelName, portNumber)
         this.peerAdmin = peerAdmin
@@ -26,10 +26,11 @@ class PeerOrganizations extends Organization {
         this.peerPort = portNumber + 1
         this.peerOperationPort = `1${this.peerPort}`
         this.chainCodePort = this.peerPort + 1
+        this.couchdbPort = portNumber + 3
     }
 }
 
-class OrdererOrganizations extends Organization {
+class OrdererOrganization extends Organization {
     constructor(orgName, caAdmin, caPassword, ordererAdmin, ordererPassword, channelName, portNumber) {
         super(orgName, caAdmin, caPassword, channelName, portNumber)
         this.ordererAdmin = ordererAdmin
@@ -48,12 +49,17 @@ class Channel {
         this.peers = peers
     }
 
+    get getNormalizeChannel() {
+        return this.channelName.replace(" ", ".").toLowerCase()
+    }
+
     set addPeer(peer) {
         this.peers.push(peer)
     }
 }
 
 
-exports.Organization = Organization
-exports.PeerOrganization = PeerOrganizations
-exports.OrdererOrganizations = OrdererOrganizations
+// exports.Organization = Organization
+exports.PeerOrganization = PeerOrganization
+exports.OrdererOrganization = OrdererOrganization
+exports.Channel = Channel
