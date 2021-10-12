@@ -27,6 +27,7 @@ class PeerOrganization extends Organization {
         this.peerOperationPort = `1${this.peerPort}`
         this.chainCodePort = this.peerPort + 1
         this.couchdbPort = portNumber + 3
+        this.peerMSPID = `${this.getNormalizeOrg}.msp`
     }
 }
 
@@ -38,6 +39,7 @@ class OrdererOrganization extends Organization {
         this.ordererPort = portNumber + 1
         this.ordererOperationPort = `1${this.ordererPort}`
         this.ordererAdminPort = this.ordererPort + 1 // use by onsadmin
+        this.ordererMSPID = `orderer.${this.getNormalizeOrg}.msp`
     }
 }
 
