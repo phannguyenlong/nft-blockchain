@@ -151,11 +151,11 @@ async function PeerJoinChannel(PeerOrganization, OrdererOrganization) {
     // join channel by the genesis block
     // As a result of the successful channel update, the ordering service will verify that the new org can pull the genesis block and join the channel
     // If not successfully joined, the ordering service would reject this request
-    shell.exec(`peer channel fetch 0 ${NETWORK_PATH}channel-artifacts/${OrdererOrganization.getNormalizeChannel}/iamherer.block -o localhost:${OrdererOrganization.ordererPort} -c ${OrdererOrganization.getNormalizeChannel} --tls --cafile "${NETWORK_PATH}/organizations/${OrdererOrganization.getNormalizeChannel}/ordererOrganizations/${OrdererOrganization.getNormalizeOrg}/msp/tlscacerts/tls-localhost-${OrdererOrganization.caPort}-ca-orderer-${OrdererOrganization.getNormalizeOrg.replace(".", "-")}.pem"`)
+    shell.exec(`peer channel fetch 0 ${NETWORK_PATH}channel-artifacts/${OrdererOrganization.getNormalizeChannel}/block0.block -o localhost:${OrdererOrganization.ordererPort} -c ${OrdererOrganization.getNormalizeChannel} --tls --cafile "${NETWORK_PATH}/organizations/${OrdererOrganization.getNormalizeChannel}/ordererOrganizations/${OrdererOrganization.getNormalizeOrg}/msp/tlscacerts/tls-localhost-${OrdererOrganization.caPort}-ca-orderer-${OrdererOrganization.getNormalizeOrg.replace(".", "-")}.pem"`)
     // if * not working then replace with this tls-localhost-8054-ca-orderer-company-c.pem
 
     // join peer
-    shell.exec(`peer channel join -b ${NETWORK_PATH}/channel-artifacts/${OrdererOrganization.getNormalizeChannel}/genesis_block.pb`)
+    shell.exec(`peer channel join -b ${NETWORK_PATH}/channel-artifacts/${OrdererOrganization.getNormalizeChannel}/block0.block`)
 }
 
 async function submitConfig(originalBlock, modifiedBlock, channelName) {
