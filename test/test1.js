@@ -155,7 +155,7 @@ async function PeerJoinChannel(PeerOrganization, OrdererOrganization) {
     // if * not working then replace with this tls-localhost-8054-ca-orderer-company-c.pem
 
     // join peer
-    // shell.exec(`peer channel join -b ${NETWORK_PATH}/channel-artifacts/${OrdererOrganization.getNormalizeChannel}/genesis_block.pb`)
+    shell.exec(`peer channel join -b ${NETWORK_PATH}/channel-artifacts/${OrdererOrganization.getNormalizeChannel}/genesis_block.pb`)
 }
 
 async function submitConfig(originalBlock, modifiedBlock, channelName) {
@@ -243,7 +243,6 @@ async function main() {
     // // sixth, run the demo submit&sign
     await submitConfigDemo("config_block", "modified_config", channel1)
     // this is just update the channel object
-    await channel1.addPeer(peerD)
     // join the peer into the channel
     await PeerJoinChannel(peerD, orderer)
 }
