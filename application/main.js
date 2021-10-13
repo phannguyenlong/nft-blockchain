@@ -21,6 +21,9 @@ async function main() {
 
     // join channel
     await createChannel(channel1)
+
+    let d = new PeerOrganization("Company D", 'admin', 'password', 'admin', 'password', 'channel1', 9054)
+    await creatPeerAndCA(d);
 }
 
 main()
