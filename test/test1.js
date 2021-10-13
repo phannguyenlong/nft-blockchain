@@ -7,7 +7,7 @@ const {PeerOrganization} = require('../application/channel-utils/Organizations')
 const {OrdererOrganization} = require('../application/channel-utils/Organizations');
 const {Channel} = require('../application/channel-utils/Organizations');
 // config path
-let NETWORK_PATH = __dirname + "/../leopard-network" // path to network
+let NETWORK_PATH = __dirname + "/../leopard-network/" // path to network
 let UTIL_PATH = __dirname // for comback to this file
 
 // Some comments on naming convention of the fetch/encode/decode file
@@ -23,31 +23,31 @@ async function createConfigtx(peer) {
     let jsonConfig = { 
         Organizations:
         [{
-            Name: companyname, 
+            Name: `${companyname}.msp`,
             ID: `${companyname}.msp`,
             // rememeber to change when change dir     
-            MSPDir: `${NETWORK_PATH}/organizations/${peer.getNormalizeChannel}/peerOrganizations/${companyname}/msp`, 
+            MSPDir: `/mnt/d/Long_Document/VGU-CS/Year4/Project/project/nft-blockchain/leopard-network/organizations/${peer.getNormalizeChannel}/peerOrganizations/${companyname}/msp`, 
             Policies:
             {
                 Readers: 
                 {
                     Type: 'Signature',
-                    Rule: "OR('Org3MSP.admin', 'Org3MSP.peer')",
+                    Rule: `OR('${companyname}.msp.member' )`,
                 },
                 Writers: 
                 {
                     Type: 'Signature',
-                    Rule: "OR('Org3MSP.admin')",
+                    Rule: `OR('${companyname}.msp.member')`,
                 },
                 Admins: 
                 {
                     Type: 'Signature',
-                    Rule: "OR('Org3MSP.admin')",
+                    Rule: `OR('${companyname}.msp.member')`,
                 },
                 Endorsement: 
                 {
                     Type: 'Signature',
-                    Rule: "OR('Org3MSP.peer')",
+                    Rule: `OR('${companyname}.msp.member')`,
                 }
             
             }
@@ -62,12 +62,12 @@ async function createConfigtx(peer) {
     fs.writeFileSync(filePath + `/configtx.yaml`, yaml.dump(jsonConfig, { lineWidth: -1 }))
     console.log('yaml creation sucess');
 
-    shell.env["PATH"] = __dirname + "/../../bin/:" + shell.env["PATH"] 
+    shell.env["PATH"] = __dirname + "/../bin/:" + shell.env["PATH"] 
     shell.env["FABRIC_CFG_PATH"] = NETWORK_PATH + `/channel-artifacts/${peer.getNormalizeChannel}/`
     console.log('export ok'); 
     console.log(__dirname);
 
-    shell.exec(`configtxgen -printOrg ${companyname} > ${NETWORK_PATH}/channel-artifacts/${peer.getNormalizeChannel}/${companyname}.json`) 
+    shell.exec(`configtxgen -printOrg ${companyname}.msp > ${NETWORK_PATH}/channel-artifacts/${peer.getNormalizeChannel}/${companyname}.json`) 
     console.log('JSONified success');
     chdir(filePath) // then set it again to prevent error
     console.log('sth sth');
@@ -81,17 +81,11 @@ async function fetchConfig(PeerOrganization, OrdererOrganization) {
     shell.env["PATH"] = __dirname + "/../bin/:" + shell.env["PATH"] // set path to bin
     console.log('sth sth1');
     shell.env["FABRIC_CFG_PATH"] = NETWORK_PATH + `/channel-config/${PeerOrganization.getNormalizeChannel}` // path to configtx of the channel
-    console.log('sth sth2');
     shell.env["CORE_PEER_TLS_ENABLED"] = true // enable TLS
-    console.log('sth sth3');
     shell.env["CORE_PEER_LOCALMSPID"] = `${PeerOrganization.peerMSPID}`
-    console.log('sth sth4');
     shell.env["CORE_PEER_TLS_ROOTCERT_FILE"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer.${PeerOrganization.getNormalizeOrg}/tls/ca.crt`
-    console.log('sth sth5');
-    shell.env["CORE_PEER_MSPCONFIGPATH"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer-${PeerOrganization.getNormalizeOrg}/msp`
-    console.log('sth sth6');
-    shell.env["CORE_PEER_ADDRESS"] = `localhost: ${PeerOrganization.peerPort}`
-    console.log('sth sth7');
+    shell.env["CORE_PEER_MSPCONFIGPATH"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer-${PeerOrganization.getNormalizeOrg}/msp/user/admin/msp`
+    shell.env["CORE_PEER_ADDRESS"] = `localhost:${PeerOrganization.peerPort}`
     // fetch the latest config block
     shell.exec(`peer channel fetch config ${NETWORK_PATH}/channel-artifacts/${OrdererOrganization.getNormalizeChannel}/config_block.pb -o localhost:${OrdererOrganization.ordererPort} -c ${OrdererOrganization.getNormalizeChannel} --tls --cafile "${NETWORK_PATH}/organizations/${OrdererOrganization.getNormalizeChannel}/ordererOrganizations/${OrdererOrganization.getNormalizeOrg}/msp/tlscacerts/tls-localhost-${OrdererOrganization.caPort}-ca-orderer-${OrdererOrganization.getNormalizeOrg.replace(".", "-")}.pem"`)
     // if * not working then replace with this tls-localhost-8054-ca-orderer-company-c.pem
@@ -145,21 +139,23 @@ async function PeerJoinChannel(PeerOrganization, OrdererOrganization) {
     // 2 organization objects 
     // PeerOrganization = peer object that is the newly joined member of the channel
     // OdererOrganization = orderer of the channel
+    shell.env["PATH"] = NETWORK_PATH + `../bin/:` + shell.env["PATH"] // set path to bin
 
+    shell.env["FABRIC_CFG_PATH"] = NETWORK_PATH + `/channel-config/${PeerOrganization.getNormalizeChannel}` // path to configtx of the channel
     shell.env["CORE_PEER_TLS_ENABLED"] = true // enable TLS
-    shell.env["CORE_PEER_LOCALMSPID"] = `${PeerOrganization.peerMSPID}`
-    shell.env["CORE_PEER_TLS_ROOTCERT_FILE"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer.${PeerOrganization.getNormalizeOrg}/tls/ca.crt`
-    shell.env["CORE_PEER_MSPCONFIGPATH"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer-${PeerOrganization.getNormalizeOrg}/msp`
-    shell.env["CORE_PEER_ADDRESS"] = `localhost: ${PeerOrganization.peerPort}`
+    shell.env["CORE_PEER_LOCALMSPID"] = `company.d.msp`
+    shell.env["CORE_PEER_TLS_ROOTCERT_FILE"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer-${PeerOrganization.getNormalizeOrg}/tls/ca.crt`
+    shell.env["CORE_PEER_MSPCONFIGPATH"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer-${PeerOrganization.getNormalizeOrg}/msp/user/admin/msp`
+    shell.env["CORE_PEER_ADDRESS"] = `localhost:${PeerOrganization.peerPort}`
 
     // join channel by the genesis block
     // As a result of the successful channel update, the ordering service will verify that the new org can pull the genesis block and join the channel
     // If not successfully joined, the ordering service would reject this request
-    shell.exec(`peer channel fetch 0 ${NETWORK_PATH}/channel-artifacts/${OrdererOrganization.getNormalizeChannel}/block0.block -o localhost:${OrdererOrganization.ordererPort} -c ${OrdererOrganization.getNormalizeChannel} --tls --cafile "${NETWORK_PATH}/organizations/${OrdererOrganization.getNormalizeChannel}/ordererOrganizations/${OrdererOrganization.orgName}/orderers/orderer.${PeerOrganization.getNormalizeOrg}/msp/tlscacerts/*"`)
+    shell.exec(`peer channel fetch 0 ${NETWORK_PATH}channel-artifacts/${OrdererOrganization.getNormalizeChannel}/iamherer.block -o localhost:${OrdererOrganization.ordererPort} -c ${OrdererOrganization.getNormalizeChannel} --tls --cafile "${NETWORK_PATH}/organizations/${OrdererOrganization.getNormalizeChannel}/ordererOrganizations/${OrdererOrganization.getNormalizeOrg}/msp/tlscacerts/tls-localhost-${OrdererOrganization.caPort}-ca-orderer-${OrdererOrganization.getNormalizeOrg.replace(".", "-")}.pem"`)
     // if * not working then replace with this tls-localhost-8054-ca-orderer-company-c.pem
 
     // join peer
-    shell.exec(`peer channel join -b ${NETWORK_PATH}/channel-artifacts/block0.block`)
+    // shell.exec(`peer channel join -b ${NETWORK_PATH}/channel-artifacts/${OrdererOrganization.getNormalizeChannel}/genesis_block.pb`)
 }
 
 async function submitConfig(originalBlock, modifiedBlock, channelName) {
@@ -185,6 +181,25 @@ async function submitConfigDemo(originalBlock, modifiedBlock, Channel) {
     // config_update.pb is now ready to submit and sign (update the channel config)
     shell.exec(`configtxlator compute_update --channel_id ${Channel.getNormalizeChannel} --original ${NETWORK_PATH}/channel-artifacts/${Channel.getNormalizeChannel}/${originalBlock}.pb --updated ${NETWORK_PATH}/channel-artifacts/${Channel.channelName}/${modifiedBlock}.pb --output ${NETWORK_PATH}/channel-artifacts/${Channel.getNormalizeChannel}/config_update.pb`)
 
+    shell.exec(`configtxlator proto_decode --input ${NETWORK_PATH}/channel-artifacts/${Channel.getNormalizeChannel}/config_update.pb --type common.ConfigUpdate --output ${NETWORK_PATH}/channel-artifacts/${Channel.getNormalizeChannel}/config_update.json`)
+
+    let json = fs.readFileSync(`${NETWORK_PATH}/channel-artifacts/${Channel.getNormalizeChannel}/config_update.json`)
+    let data = {
+        payload: {
+            header: {
+                channel_header: {
+                    channel_id: Channel.getNormalizeChannel,
+                    type: 2
+                }
+            },
+            data: {
+                config_update: JSON.parse(json.toString())
+            }
+        }
+    }
+    fs.writeFileSync(`${NETWORK_PATH}/channel-artifacts/${Channel.getNormalizeChannel}/config_update_in_envelope.json`, JSON.stringify(data, null, 2))
+    
+    shell.exec(`configtxlator proto_encode --input ${NETWORK_PATH}/channel-artifacts/${Channel.getNormalizeChannel}/config_update_in_envelope.json --type common.Envelope --output ${NETWORK_PATH}/channel-artifacts/${Channel.getNormalizeChannel}/conifg_update_in_envelope.pb`)
     for (iterator = 0; iterator < Channel.peers.length; iterator++) {
         let peer = Channel.peers[iterator]
 
@@ -192,16 +207,16 @@ async function submitConfigDemo(originalBlock, modifiedBlock, Channel) {
         shell.env["CORE_PEER_TLS_ENABLED"] = true // enable TLS
         shell.env["CORE_PEER_LOCALMSPID"] = `${peer.peerMSPID}`
         shell.env["CORE_PEER_TLS_ROOTCERT_FILE"] = NETWORK_PATH + `/organizations/${peer.getNormalizeChannel}/peerOrganizations/${peer.getNormalizeOrg}/peers/peer.${peer.getNormalizeOrg}/tls/ca.crt`
-        shell.env["CORE_PEER_MSPCONFIGPATH"] = NETWORK_PATH + `/organizations/${peer.getNormalizeChannel}/peerOrganizations/${peer.getNormalizeOrg}/peers/peer-${peer.getNormalizeOrg}/msp`
+        shell.env["CORE_PEER_MSPCONFIGPATH"] = NETWORK_PATH + `/organizations/${peer.getNormalizeChannel}/peerOrganizations/${peer.getNormalizeOrg}/peers/peer-${peer.getNormalizeOrg}/msp/user/admin/msp`
         shell.env["CORE_PEER_ADDRESS"] = `localhost: ${peer.peerPort}`
 
         // sign the update
         // might need to change path to bin for signconfigtx
         if (iterator != Channel.peers.length - 1) {
-            shell.exec(`peer channel signconfigtx -f ${NETWORK_PATH}/channel-artifacts/${peer.getNormalizeChannel}/config_update.pb`)
+            shell.exec(`peer channel signconfigtx -f ${NETWORK_PATH}/channel-artifacts/${peer.getNormalizeChannel}/conifg_update_in_envelope.pb`)
         } else {
             // logic: the last peer sign and update 
-            shell.exec(`peer channel update -f ${NETWORK_PATH}/channel-artifacts/${peer.getNormalizeChannel}/config_update.pb -o localhost:${Channel.orderer.ordererPort} -c ${Channel.getNormalizeChannel} --tls --cafile "${NETWORK_PATH}/organizations/${Channel.getNormalizeChannel}/ordererOrganizations/${Channel.orderer.orgName}/orderers/orderer.${peer.getNormalizeOrg}/msp/tlscacerts/*"`)
+            shell.exec(`peer channel update -f ${NETWORK_PATH}/channel-artifacts/${peer.getNormalizeChannel}/conifg_update_in_envelope.pb -o localhost:${Channel.orderer.ordererPort} -c ${Channel.getNormalizeChannel} --tls --cafile "${NETWORK_PATH}/organizations/${Channel.getNormalizeChannel}/ordererOrganizations/${Channel.orderer.getNormalizeOrg}/msp/tlscacerts/tls-localhost-${Channel.orderer.caPort}-ca-orderer-${Channel.orderer.getNormalizeOrg.replace(".", "-")}.pem"`)
         }
     }
 }
@@ -212,25 +227,25 @@ async function main() {
     let peerA = new PeerOrganization("Company A", 'admin', 'password', 'admin', 'password', 'channel1', 6054)
     let peerB = new PeerOrganization("Company B", 'admin', 'password', 'admin', 'password', 'channel1', 7054)
     let orderer = new OrdererOrganization("Company C", 'ordererAdmin', 'ordererPassword', 'admin', 'password', 'channel1', 8054)
-    let peerD = new PeerOrganization("Company D", 'admin', 'password', 'admin', 'password', 'channel1', 4054)
+    let peerD = new PeerOrganization("Company D", 'admin', 'password', 'admin', 'password', 'channel1', 9054)
     let channel1 = new Channel("channel1", orderer, [peerA, peerB])
     // first create config of the org that want to join channel
     await createConfigtx(peerD)
-    // second, use a member of the channel to fetch the config block
+    // // second, use a member of the channel to fetch the config block
     await fetchConfig(peerA, orderer)
     // third, decode the config block
     await decodePBtoJSON("config_block", "channel1")
-    // fourth, update the config block by appending the json file in step 1
+    // // fourth, update the config block by appending the json file in step 1
     await updateConfig("config_block", `${peerD.getNormalizeOrg}`, "channel1")
-    // fifth, encode the 2 blocks back to pb
+    // // fifth, encode the 2 blocks back to pb
     await encodeJSONtoPB("config_block", "channel1")
     await encodeJSONtoPB("modified_config", "channel1")
-    // sixth, run the demo submit&sign
+    // // sixth, run the demo submit&sign
     await submitConfigDemo("config_block", "modified_config", channel1)
     // this is just update the channel object
-    // await channel1.addPeer(peerD)
-    // // join the peer into the channel
-    // await PeerJoinChannel(peerD, orderer)
+    await channel1.addPeer(peerD)
+    // join the peer into the channel
+    await PeerJoinChannel(peerD, orderer)
 }
 
 main()
