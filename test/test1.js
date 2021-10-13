@@ -26,7 +26,7 @@ async function createConfigtx(peer) {
             Name: `${companyname}.msp`,
             ID: `${companyname}.msp`,
             // rememeber to change when change dir     
-            MSPDir: `/mnt/d/Long_Document/VGU-CS/Year4/Project/project/nft-blockchain/leopard-network/organizations/${peer.getNormalizeChannel}/peerOrganizations/${companyname}/msp`, 
+            MSPDir: `${NETWORK_PATH}/organizations/${peer.getNormalizeChannel}/peerOrganizations/${companyname}/msp`, 
             Policies:
             {
                 Readers: 
@@ -143,7 +143,7 @@ async function PeerJoinChannel(PeerOrganization, OrdererOrganization) {
 
     shell.env["FABRIC_CFG_PATH"] = NETWORK_PATH + `/channel-config/${PeerOrganization.getNormalizeChannel}` // path to configtx of the channel
     shell.env["CORE_PEER_TLS_ENABLED"] = true // enable TLS
-    shell.env["CORE_PEER_LOCALMSPID"] = `company.d.msp`
+    shell.env["CORE_PEER_LOCALMSPID"] = `${PeerOrganization.peerMSPID}`
     shell.env["CORE_PEER_TLS_ROOTCERT_FILE"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer-${PeerOrganization.getNormalizeOrg}/tls/ca.crt`
     shell.env["CORE_PEER_MSPCONFIGPATH"] = NETWORK_PATH + `/organizations/${PeerOrganization.getNormalizeChannel}/peerOrganizations/${PeerOrganization.getNormalizeOrg}/peers/peer-${PeerOrganization.getNormalizeOrg}/msp/user/admin/msp`
     shell.env["CORE_PEER_ADDRESS"] = `localhost:${PeerOrganization.peerPort}`
